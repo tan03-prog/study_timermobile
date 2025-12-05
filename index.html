@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>勉強タイマー（スマホ版）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 16px 10px;
+            background: #f3f4f6;
+            color: #111827;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 420px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+            padding: 14px 14px 16px;
+        }
+
+        header {
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        #date-display {
+            margin-top: 2px;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        /* ビュー切り替え */
+        #view-switch {
+            display: flex;
+            background: #f3f4f6;
+            border-radius: 999px;
+            padding: 3px;
+            margin: 6px 0 10px;
+        }
+
+        .view-btn {
+            flex: 1;
+            border-radius: 999px;
+            border: none;
+            padding: 6px 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            background: transparent;
+            color: #6b7280;
+        }
+
+        .view-btn.active {
+            background: #ffffff;
+            color: #111827;
+            box-shadow: 0 0 0 1px rgba(156, 163, 175, 0.7);
+        }
+
+        /* 今日ビュー */
+        #today-view, #week-view {
+            font-size: 0.9rem;
+        }
+
+        #time-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 10px 10px 9px;
+            margin-bottom: 10px;
+        }
+
+        #time {
+            font-size: 2.3rem;
+            letter-spacing: 0.12em;
+            text-indent: 0.12em;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        #today {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #4b5563;
+            margin-bottom: 4px;
+        }
+
+        #today-total {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        /* 目標時間・進捗 */
+        #goal-area {
+            margin: 6px 0 8px;
+            padding: 8px 9px;
+            border-radius: 10px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            font-size: 0.85rem;
+        }
+
+        #goal-top {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 6px;
+        }
+
+        #goal-info {
+            font-size: 0.82rem;
+            color: #4b5563;
+        }
+
+        #goal-hours {
+            width: 70px;
+            padding: 5px 6px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            text-align: right;
+        }
+
+        #goal-set {
+            padding: 6px 9px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .progress-wrap {
+            margin-top: 4px;
+        }
+
+        .progress-bg {
+            width: 100%;
+            height: 8px;
+            border-radius: 999px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 999px;
+            background: #22c55e;
+            width: 0%;
+            transition: width 0.2s ease;
+        }
+
+        .progress-label {
+            margin-top: 3px;
+            font-size: 0.8rem;
+            color: #4b5563;
+            text-align: right;
+        }
+
+        /* 科目エリア */
+        #subject-area {
+            margin-top: 6px;
+            padding: 8px 9px;
+            border-radius: 10px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+        }
+
+        #subject-area-top {
+            margin-bottom: 4px;
+        }
+
+        #subject-name {
+            font-weight: 600;
+        }
+
+        #subject-input {
+            margin-top: 4px;
+            padding: 6px 8px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            width: 60%;
+        }
+
+        #subject-change {
+            margin-left: 4px;
+            padding: 7px 9px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        /* ポモドーロ */
+        #pomodoro-area {
+            margin-top: 8px;
+            padding: 8px 9px;
+            border-radius: 10px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            font-size: 0.8rem;
+        }
+
+        #pomodoro-area label {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        #pomodoro-area input[type="number"] {
+            width: 60px;
+            padding: 3px 5px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            border: 1px solid #d1d5db;
+            text-align: center;
+        }
+
+        #pomodoro-status {
+            margin-top: 4px;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        #pomodoro-status.active {
+            color: #16a34a;
+        }
+
+        /* ボタン */
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 9px;
+        }
+
+        button {
+            padding: 8px 13px;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #start { background: #16a34a; color: #ffffff; }
+        #stop  { background: #ef4444; color: #ffffff; }
+        #reset { background: #9ca3af; color: #ffffff; }
+        #all-reset { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        /* 科目一覧 */
+        #subject-list-area {
+            margin-top: 8px;
+            padding: 8px 9px;
+            border-radius: 10px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            font-size: 0.85rem;
+        }
+
+        #subject-list-area h3 {
+            margin: 0 0 4px;
+            font-size: 0.85rem;
+            color: #4b5563;
+        }
+
+        #subject-list {
+            line-height: 1.6;
+        }
+
+        .subject-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2px 0;
+            gap: 8px;
+        }
+
+        .subject-label {
+            flex: 1;
+        }
+
+        .subject-reset-btn {
+            padding: 3px 8px;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            background: #e5e7eb;
+        }
+
+        .hidden { display: none; }
+
+        /* 1週間ビュー */
+        #week-view h2 {
+            font-size: 0.96rem;
+            margin: 0 0 6px;
+        }
+
+        #weekly-list {
+            font-size: 0.85rem;
+        }
+
+        .weekly-day {
+            background: #ffffff;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            padding: 8px 9px;
+            margin-bottom: 6px;
+        }
+
+        .weekly-day-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        footer {
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <header>
+        <h1>勉強タイマー（スマホ版）</h1>
+        <div id="date-display">今日の日付：</div>
+    </header>
+
+    <div id="view-switch">
+        <button id="show-today" class="view-btn active">今日のタイマー</button>
+        <button id="show-week" class="view-btn">直近1週間の記録</button>
+    </div>
+
+    <!-- 今日のタイマー画面 -->
+    <div id="today-view">
+        <div id="time-card">
+            <div id="time">00:00:00</div>
+
+            <div id="today">
+                今日の合計勉強時間：
+                <span id="today-total">00:00:00</span>
+            </div>
+
+            <!-- 目標時間＆進捗 -->
+            <div id="goal-area">
+                <div id="goal-top">
+                    <div id="goal-info">今日の目標時間：</div>
+                    <input id="goal-hours" type="number" min="0" step="0.5" placeholder="3">
+                    <span style="font-size:0.8rem;">時間</span>
+                    <button id="goal-set">設定</button>
+                </div>
+                <div class="progress-wrap">
+                    <div class="progress-bg">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
+                    <div class="progress-label" id="progress-label">目標未設定</div>
+                </div>
+            </div>
+
+            <div id="subject-area">
+                <div id="subject-area-top">
+                    現在の科目：<span id="subject-name">共通</span>
+                </div>
+                <input id="subject-input" type="text" placeholder="例：数学">
+                <button id="subject-change">科目を変更</button>
+            </div>
+
+            <div id="pomodoro-area">
+                <label>
+                    <input type="checkbox" id="pomodoro-enable">
+                    ポモドーロモード（作業＋休憩を自動で切り替え）
+                </label>
+                <div>
+                    作業
+                    <input type="number" id="pomodoro-work" value="25" min="1" max="180"> 分
+                    ／ 休憩
+                    <input type="number" id="pomodoro-break" value="5" min="1" max="60"> 分
+                </div>
+                <label style="margin-top:4px;">
+                    <input type="checkbox" id="sound-enable" checked>
+                    終了・切り替え時に音を鳴らす
+                </label>
+                <div id="pomodoro-status">ポモドーロ: OFF</div>
+            </div>
+
+            <div class="buttons">
+                <button id="start">スタート</button>
+                <button id="stop" disabled>ストップ</button>
+                <button id="reset" disabled>この科目をリセット</button>
+                <button id="all-reset">全科目リセット</button>
+            </div>
+        </div>
+
+        <div id="subject-list-area">
+            <h3>科目ごとの今日の勉強時間</h3>
+            <div id="subject-list">（まだ記録なし）</div>
+        </div>
+    </div>
+
+    <!-- 1週間の記録画面 -->
+    <div id="week-view" class="hidden">
+        <h2>直近1週間の勉強時間</h2>
+        <div id="weekly-list">（まだ記録なし）</div>
+    </div>
+
+    <footer>スマホ用レイアウトの勉強タイマー</footer>
+</div>
+
+<script>
+    // ====== データ構造 ======
+    // dayDataMap: { "YYYY-MM-DD": { times: {...}, lastSubject: "科目名", goalHours: number }, ... }
+    let dayDataMap = {};
+    let times = {};
+    let currentSubject = "共通";
+
+    let startTime = 0;
+    let elapsed   = 0;
+    let timerId   = null;
+
+    // ポモドーロ状態
+    let pomodoroEnabled = false;
+    let pomodoroState = "idle"; // "idle" | "work" | "break"
+    let pomodoroWorkMs = 25 * 60 * 1000;
+    let pomodoroBreakMs = 5 * 60 * 1000;
+    let pomodoroPhaseStart = 0;
+    let pomodoroPhaseDuration = 0;
+
+    // サウンド
+    let audioCtx = null;
+
+    const timeEl        = document.getElementById("time");
+    const todayEl       = document.getElementById("today-total");
+    const subjectNameEl = document.getElementById("subject-name");
+    const subjectInput  = document.getElementById("subject-input");
+    const subjectBtn    = document.getElementById("subject-change");
+
+    const startBtn    = document.getElementById("start");
+    const stopBtn     = document.getElementById("stop");
+    const resetBtn    = document.getElementById("reset");
+    const allResetBtn = document.getElementById("all-reset");
+
+    const subjectListEl = document.getElementById("subject-list");
+
+    const dateDisplayEl = document.getElementById("date-display");
+
+    const todayViewEl = document.getElementById("today-view");
+    const weekViewEl  = document.getElementById("week-view");
+    const showTodayBtn = document.getElementById("show-today");
+    const showWeekBtn  = document.getElementById("show-week");
+    const weeklyListEl = document.getElementById("weekly-list");
+
+    const pomoEnableEl = document.getElementById("pomodoro-enable");
+    const pomoWorkEl   = document.getElementById("pomodoro-work");
+    const pomoBreakEl  = document.getElementById("pomodoro-break");
+    const pomoStatusEl = document.getElementById("pomodoro-status");
+    const soundEnableEl = document.getElementById("sound-enable");
+
+    // 目標関連
+    const goalHoursEl   = document.getElementById("goal-hours");
+    const goalSetBtn    = document.getElementById("goal-set");
+    const progressBarEl = document.getElementById("progress-bar");
+    const progressLabelEl = document.getElementById("progress-label");
+    let goalHours = 0; // 時間単位
+
+    const STORAGE_KEY = "studyTimer_days_v1";
+
+    // ====== 日付関連 ======
+    function getTodayKey() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+    }
+
+    const todayKey = getTodayKey();
+
+    function renderTodayDate() {
+        const d = new Date();
+        const opt = { year: "numeric", month: "numeric", day: "numeric", weekday: "short" };
+        const s = d.toLocaleDateString("ja-JP", opt);
+        dateDisplayEl.textContent = `今日の日付：${s}`;
+    }
+
+    // ====== サウンド ======
+    function playBeep() {
+        if (!soundEnableEl.checked) return;
+
+        try {
+            if (!audioCtx) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioCtx();
+            }
+            const ctx = audioCtx;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.value = 880;
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start();
+            osc.stop(ctx.currentTime + 0.3);
+        } catch (e) {
+            console.log("sound error", e);
+        }
+    }
+
+    // ====== 共通関数 ======
+    function formatTime(ms) {
+        const totalSec = Math.floor(ms / 1000);
+        const h = String(Math.floor(totalSec / 3600)).padStart(2, "0");
+        const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, "0");
+        const s = String(totalSec % 60).padStart(2, "0");
+        return `${h}:${m}:${s}`;
+    }
+
+    function getTodayTotalMs() {
+        let sum = 0;
+        for (const key in times) {
+            if (Object.prototype.hasOwnProperty.call(times, key)) {
+                const v = times[key];
+                if (typeof v === "number") sum += v;
+            }
+        }
+        return sum;
+    }
+
+    function renderProgress() {
+        const totalMs = getTodayTotalMs();
+        if (!goalHours || goalHours <= 0) {
+            progressBarEl.style.width = "0%";
+            progressLabelEl.textContent = "目標未設定";
+            return;
+        }
+        const goalMs = goalHours * 3600000;
+        let ratio = totalMs / goalMs;
+        if (ratio < 0) ratio = 0;
+        let percent = Math.floor(ratio * 100);
+        if (percent > 200) percent = 200; // 2倍まで
+
+        const width = Math.min(percent, 100);
+        progressBarEl.style.width = width + "%";
+
+        const hour = (totalMs / 3600000);
+        const hourStr = hour.toFixed(2);
+        const goalStr = goalHours.toFixed(2);
+        progressLabelEl.textContent = `達成度 ${percent}%（${hourStr}h / ${goalStr}h）`;
+    }
+
+    function renderSubjectList() {
+        subjectListEl.innerHTML = "";
+        const keys = Object.keys(times);
+        if (keys.length === 0) {
+            subjectListEl.textContent = "（まだ記録なし）";
+            return;
+        }
+        keys.sort();
+        for (const name of keys) {
+            const ms = times[name] || 0;
+
+            const row = document.createElement("div");
+            row.className = "subject-row";
+
+            const label = document.createElement("span");
+            label.className = "subject-label";
+            label.textContent = `${name}：${formatTime(ms)}`;
+
+            const btn = document.createElement("button");
+            btn.textContent = "リセット";
+            btn.className = "subject-reset-btn";
+            btn.dataset.subject = name;
+
+            row.appendChild(label);
+            row.appendChild(btn);
+            subjectListEl.appendChild(row);
+        }
+    }
+
+    function renderTodayView() {
+        timeEl.textContent        = formatTime(elapsed);
+        todayEl.textContent       = formatTime(getTodayTotalMs());
+        subjectNameEl.textContent = currentSubject;
+        renderSubjectList();
+        renderProgress();
+    }
+
+    function renderWeeklyView() {
+        weeklyListEl.innerHTML = "";
+        const days = Object.keys(dayDataMap || {});
+        if (days.length === 0) {
+            weeklyListEl.textContent = "（まだ記録なし）";
+            return;
+        }
+        days.sort();
+        const last7 = days.slice(-7);
+
+        for (const dateStr of last7) {
+            const dayData = dayDataMap[dateStr];
+            if (!dayData || !dayData.times) continue;
+
+            const tms = dayData.times;
+            let totalMs = 0;
+            for (const subj in tms) {
+                if (Object.prototype.hasOwnProperty.call(tms, subj)) {
+                    const v = tms[subj];
+                    if (typeof v === "number") totalMs += v;
+                }
+            }
+
+            const dayDiv = document.createElement("div");
+            dayDiv.className = "weekly-day";
+
+            const title = document.createElement("div");
+            title.className = "weekly-day-title";
+            title.textContent = `${dateStr}：${formatTime(totalMs)}`;
+            dayDiv.appendChild(title);
+
+            const list = document.createElement("div");
+            for (const subj in tms) {
+                if (Object.prototype.hasOwnProperty.call(tms, subj)) {
+                    const line = document.createElement("div");
+                    line.textContent = `・${subj}：${formatTime(tms[subj])}`;
+                    list.appendChild(line);
+                }
+            }
+            dayDiv.appendChild(list);
+            weeklyListEl.appendChild(dayDiv);
+        }
+
+        if (!weeklyListEl.hasChildNodes()) {
+            weeklyListEl.textContent = "（まだ記録なし）";
+        }
+    }
+
+    // ====== 保存・読み込み ======
+    function loadAllFromStorage() {
+        dayDataMap = {};
+        times = {};
+        currentSubject = "共通";
+        elapsed = 0;
+        goalHours = 0;
+
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                const data = JSON.parse(raw);
+                if (data && data.days && typeof data.days === "object") {
+                    dayDataMap = data.days;
+                }
+            }
+        } catch (e) {
+            console.log("load error", e);
+        }
+
+        if (!dayDataMap[todayKey]) {
+            times = {};
+            currentSubject = "共通";
+            elapsed = 0;
+            goalHours = 0;
+            dayDataMap[todayKey] = {
+                times: times,
+                lastSubject: currentSubject,
+                goalHours: goalHours
+            };
+        } else {
+            const todayData = dayDataMap[todayKey];
+            times = todayData.times || {};
+            currentSubject = todayData.lastSubject || "共通";
+            elapsed = times[currentSubject] || 0;
+            goalHours = typeof todayData.goalHours === "number" ? todayData.goalHours : 0;
+        }
+
+        if (goalHours > 0) {
+            goalHoursEl.value = goalHours;
+        } else {
+            goalHoursEl.value = "";
+        }
+    }
+
+    function saveTodayToStorage() {
+        times[currentSubject] = elapsed;
+
+        if (!dayDataMap) dayDataMap = {};
+        dayDataMap[todayKey] = {
+            times: times,
+            lastSubject: currentSubject,
+            goalHours: goalHours
+        };
+
+        const data = { days: dayDataMap };
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {
+            console.log("save error", e);
+        }
+    }
+
+    // ====== タイマー（ポモドーロ対応） ======
+    function startTimer() {
+        startTime = Date.now() - elapsed;
+
+        pomodoroEnabled = pomoEnableEl.checked;
+        if (pomodoroEnabled) {
+            const workMin  = Math.max(1, Number(pomoWorkEl.value)  || 25);
+            const breakMin = Math.max(1, Number(pomoBreakEl.value) || 5);
+            pomodoroWorkMs  = workMin  * 60 * 1000;
+            pomodoroBreakMs = breakMin * 60 * 1000;
+
+            pomodoroState = "work";
+            pomodoroPhaseDuration = pomodoroWorkMs;
+            pomodoroPhaseStart = Date.now();
+            pomoStatusEl.textContent = `ポモドーロ: 作業中（${workMin}分）`;
+            pomoStatusEl.classList.add("active");
+        } else {
+            pomodoroState = "idle";
+            pomoStatusEl.textContent = "ポモドーロ: OFF";
+            pomoStatusEl.classList.remove("active");
+        }
+
+        timerId = setInterval(() => {
+            const now = Date.now();
+
+            if (!pomodoroEnabled || pomodoroState === "work") {
+                elapsed = now - startTime;
+                times[currentSubject] = elapsed;
+            }
+
+            renderTodayView();
+            saveTodayToStorage();
+
+            if (pomodoroEnabled && pomodoroState !== "idle") {
+                const phaseElapsed = now - pomodoroPhaseStart;
+                const remaining = pomodoroPhaseDuration - phaseElapsed;
+
+                if (remaining <= 0) {
+                    if (pomodoroState === "work") {
+                        playBeep();
+                        pomodoroState = "break";
+                        pomodoroPhaseStart = now;
+                        pomodoroPhaseDuration = pomodoroBreakMs;
+                        const mins = Math.round(pomodoroBreakMs / 60000);
+                        pomoStatusEl.textContent = `ポモドーロ: 休憩中（${mins}分）`;
+
+                        startTime = now - elapsed;
+                    } else if (pomodoroState === "break") {
+                        playBeep();
+                        pomodoroState = "idle";
+                        pomoStatusEl.textContent = "ポモドーロ: 完了！おつかれさま。";
+                        pomoStatusEl.classList.add("active");
+                        clearInterval(timerId);
+                        timerId = null;
+                        startBtn.disabled = false;
+                        stopBtn.disabled = true;
+                    }
+                } else {
+                    const rSec = Math.ceil(remaining / 1000);
+                    const mm = String(Math.floor(rSec / 60)).padStart(2, "0");
+                    const ss = String(rSec % 60).padStart(2, "0");
+                    if (pomodoroState === "work") {
+                        pomoStatusEl.textContent = `ポモドーロ: 作業中 残り ${mm}:${ss}`;
+                    } else {
+                        pomoStatusEl.textContent = `ポモドーロ: 休憩中 残り ${mm}:${ss}`;
+                    }
+                }
+            }
+        }, 100);
+
+        startBtn.disabled = true;
+        stopBtn.disabled  = false;
+        resetBtn.disabled = false;
+    }
+
+    function stopTimer() {
+        clearInterval(timerId);
+        timerId = null;
+        saveTodayToStorage();
+
+        if (pomodoroEnabled) {
+            pomodoroState = "idle";
+            pomoStatusEl.textContent = "ポモドーロ: 一時停止（スタートで新しいサイクル）";
+            pomoStatusEl.classList.add("active");
+        }
+
+        startBtn.disabled = false;
+        stopBtn.disabled  = true;
+    }
+
+    function resetCurrentSubject() {
+        clearInterval(timerId);
+        timerId = null;
+        elapsed = 0;
+        times[currentSubject] = 0;
+        renderTodayView();
+        saveTodayToStorage();
+
+        pomodoroState = "idle";
+        if (!pomoEnableEl.checked) {
+            pomoStatusEl.textContent = "ポモドーロ: OFF";
+            pomoStatusEl.classList.remove("active");
+        }
+
+        startBtn.disabled = false;
+        stopBtn.disabled  = true;
+        resetBtn.disabled = true;
+    }
+
+    function resetAllSubjects() {
+        clearInterval(timerId);
+        timerId = null;
+
+        times = {};
+        elapsed = 0;
+        times[currentSubject] = 0;
+
+        renderTodayView();
+        saveTodayToStorage();
+
+        pomodoroState = "idle";
+        if (!pomoEnableEl.checked) {
+            pomoStatusEl.textContent = "ポモドーロ: OFF";
+            pomoStatusEl.classList.remove("active");
+        }
+
+        startBtn.disabled = false;
+        stopBtn.disabled  = true;
+        resetBtn.disabled = true;
+    }
+
+    // 科目変更
+    function changeSubject() {
+        const name = subjectInput.value.trim();
+        if (!name) return;
+
+        if (timerId !== null) {
+            clearInterval(timerId);
+            timerId = null;
+        }
+
+        times[currentSubject] = elapsed;
+
+        currentSubject = name;
+        elapsed = times[currentSubject] || 0;
+
+        renderTodayView();
+        saveTodayToStorage();
+
+        pomodoroState = "idle";
+        if (!pomoEnableEl.checked) {
+            pomoStatusEl.textContent = "ポモドーロ: OFF";
+            pomoStatusEl.classList.remove("active");
+        }
+
+        startBtn.disabled = false;
+        stopBtn.disabled  = true;
+        resetBtn.disabled = elapsed === 0;
+    }
+
+    // 科目一覧のリセットボタン
+    subjectListEl.addEventListener("click", (e) => {
+        const btn = e.target.closest(".subject-reset-btn");
+        if (!btn) return;
+
+        const subject = btn.dataset.subject;
+        if (!subject) return;
+
+        if (subject === currentSubject) {
+            if (timerId !== null) {
+                clearInterval(timerId);
+                timerId = null;
+            }
+            elapsed = 0;
+            startBtn.disabled = false;
+            stopBtn.disabled  = true;
+            resetBtn.disabled = true;
+        }
+
+        times[subject] = 0;
+        renderTodayView();
+        saveTodayToStorage();
+    });
+
+    // ====== 目標時間設定 ======
+    goalSetBtn.addEventListener("click", () => {
+        const v = Number(goalHoursEl.value);
+        if (isNaN(v) || v < 0) {
+            goalHours = 0;
+        } else {
+            goalHours = v;
+        }
+        saveTodayToStorage();
+        renderProgress();
+    });
+
+    // ====== 画面切り替え ======
+    function showTodayViewFn() {
+        todayViewEl.classList.remove("hidden");
+        weekViewEl.classList.add("hidden");
+        showTodayBtn.classList.add("active");
+        showWeekBtn.classList.remove("active");
+    }
+
+    function showWeekViewFn() {
+        todayViewEl.classList.add("hidden");
+        weekViewEl.classList.remove("hidden");
+        showTodayBtn.classList.remove("active");
+        showWeekBtn.classList.add("active");
+        renderWeeklyView();
+    }
+
+    showTodayBtn.addEventListener("click", showTodayViewFn);
+    showWeekBtn.addEventListener("click", showWeekViewFn);
+
+    // ====== ポモドーロチェック変化 ======
+    pomoEnableEl.addEventListener("change", () => {
+        if (pomoEnableEl.checked) {
+            if (timerId === null) {
+                pomoStatusEl.textContent = "ポモドーロ: 待機中（スタートで開始）";
+                pomoStatusEl.classList.add("active");
+            }
+        } else {
+            pomodoroEnabled = false;
+            pomodoroState = "idle";
+            pomoStatusEl.textContent = "ポモドーロ: OFF";
+            pomoStatusEl.classList.remove("active");
+        }
+    });
+
+    // ====== イベント登録 & 初期化 ======
+    startBtn.addEventListener("click", startTimer);
+    stopBtn.addEventListener("click", stopTimer);
+    resetBtn.addEventListener("click", resetCurrentSubject);
+    allResetBtn.addEventListener("click", resetAllSubjects);
+    subjectBtn.addEventListener("click", changeSubject);
+
+    renderTodayDate();
+    loadAllFromStorage();
+    renderTodayView();
+    if (elapsed > 0) {
+        resetBtn.disabled = false;
+    }
+</script>
+
+</body>
+</html>
